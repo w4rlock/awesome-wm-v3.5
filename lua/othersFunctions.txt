@@ -1,0 +1,69 @@
+--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ AUDACIOUS
+
+--[[
+   [audacious = widget({ type = "textbox" })
+   [  function currentSong()
+   [    local f = io.popen('/usr/bin/audSoung.sh')
+   [    res = ""
+   [    for line in f:lines() do
+   [        if (line == "playing") then
+   [            res = spanText.."NOW: "..spanClose
+   [        else if (line == "paused") then
+   [                res = spanText.. "PAUSA: " ..spanClose
+   [             else if (line == "stopped") then
+   [                    res = spanText.. "STOP: " ..spanClose
+   [                  else
+   [                    res = res .. spanValue .. line .. spanClose .. spanText .. " - " .. spanClose
+   [                  end
+   [             end
+   [        end
+   [    end
+   [  return res
+   [  end
+   ]]
+--++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ GETINFO AUDACIOUS EVENT
+--[[
+   [local msgAudacious=nil
+   [    function closeNotify()
+   [        if msgAudacious ~= nil then
+   [            naughty.destroy(msgAudacious)
+   [            msgAudacious = nil
+   [        end
+   [    end
+   [
+   [    function getSongInfo(time)
+   [    
+   [        local f = io.popen('/usr/bin/w4rlock-getInfoAudacious.sh')
+   [        local t = f:read()
+   [
+   [        if t ~= "" then -- comprueba que haya un tema
+   [            local img="/home/w4rlock/myPictures/emblem-multimedia.png"
+   [            closeNotify()	
+   [        local txt =     spanValue.."Title:       "..spanClose..t.."\n"
+   [                      ..spanValue.."Artist:     "..spanClose..f:read().."\n"
+   [                      ..spanValue.."Album:    "..spanClose..f:read().."\n"
+   [                      ..spanValue.."Genre:    "..spanClose..f:read().."\n"
+   [                      ..spanValue.."Year:      "..spanClose..f:read().."\n"
+   [                      ..spanValue.."Lenght:   " ..spanClose..f:read()
+   [
+   [            local im = f:read() --lee la imagen
+   [            if im ~= "--" then --si el tema tiene imagen
+   [                img = im
+   [            end 
+   [                
+   [            msgAudacious = naughty.notify({ text = txt,
+   [                           icon=img,
+   [                           timeout = time,
+   [                             icon_size=79,
+   [                           border_width = 2,
+   [                           position = "bottom_left",
+   [                           bg="#000000"
+   [                         }) 
+   [        end
+   [    end
+   [
+   [-- MOUSE EVENTS
+   [audacious:add_signal("mouse::enter", function()  getSongInfo(4) end)
+   [audacious:add_signal("mouse::leave", function()  closeNotify()	end)
+   ]]
+
