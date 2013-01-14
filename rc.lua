@@ -152,6 +152,9 @@ local keyboard_action = {
 
 -- Menubar configuration
 menubar.utils.terminal = env.terminal -- Set the terminal for applications that require it
+menubar.geometry = { with = nil, height = nil, x = 18, y = 0}
+menubar.show_categories = false
+menubar.label = setColor("Run: ", "CYAN")
 -- }}}
 
 --{{{ ESCAPE CHARS
@@ -613,10 +616,10 @@ globalkeys = awful.util.table.join(
                                                end),
     -- Prompt
     --awful.key({ modkey },            "r",     function () mypromptbox[mouse.screen]:run() end),
-    awful.key({ modkey },            "r",     function () 
-    awful.util.spawn_with_shell("dmenu_run -b -i -nf '#04B4AE' -nb '#000000' -sf '#000000' -sb '#00FFFF'") 
+    --awful.key({ modkey },            "r",     function () 
+    --awful.util.spawn_with_shell("dmenu_run -b -i -nf '#04B4AE' -nb '#000000' -sf '#000000' -sb '#00FFFF'") end),
     
-    end),
+    awful.key({ modkey }, "r", function() menubar.show() end),
     awful.key({ modkey }, "p", function() menubar.show() end),
     awful.key({ modkey }, "x",
               function ()
@@ -661,6 +664,7 @@ clientkeys = awful.util.table.join(
         function (c)
             c.minimized = true
         end),
+    awful.key({ modkey,           }, "s",      function (c) c.size_hints_honor = not c.size_hints_honor end),
     awful.key({ modkey, "Shift"   }, "m",      awful.client.floating.toggle                     ),
     awful.key({ modkey,           }, "m",
         function (c)
