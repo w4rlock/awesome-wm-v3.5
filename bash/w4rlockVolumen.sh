@@ -33,3 +33,4 @@
 
 echo " `amixer get Master |awk '/Mono:/ {print $4}' | sed -e 's/\[//g'|sed -e 's/%\]//g'`%"
 echo " `amixer get Speaker |awk '/Front\ Left:/ {print $5}' | sed -e 's/\[//g'|sed -e 's/%\]//g'`%"
+exit 1

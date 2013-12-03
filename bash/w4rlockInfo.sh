@@ -46,12 +46,12 @@ function getBat()
     fi
 
     CARGADA="Charged,"
-    CARGANDO="Charging,"
+    DESCARGANDO="Discharging,"
     STATE=`acpitool -b | awk '{print $4}'`
 
     if [[ $STATE == $CARGANDO ]]; then
         RES='+'
-    elif [[ $STATE != $CARGADA ]]; then
+    elif [[ $STATE == $DESCARGANDO ]]; then
         RES='-' 
     fi
 

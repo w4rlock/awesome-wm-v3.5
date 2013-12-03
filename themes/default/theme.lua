@@ -46,7 +46,7 @@ theme = {}
     theme.fg_minimize = "#222222"
    theme.border_width = "1"
   theme.border_normal = color.BLACK
-   theme.border_focus = color.BLACK
+   theme.border_focus = "#006666"
   theme.border_marked = "#91231c"
 -- There are other variable sets
 -- overriding the default one when

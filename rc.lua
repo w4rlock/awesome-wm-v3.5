@@ -1,16 +1,16 @@
+--{{{ IMPORTS 
 local gears = require("gears")
 awful = require("awful")
 awful.rules = require("awful.rules")
 require("awful.autofocus")
 local wibox = require("wibox")
 beautiful = require("beautiful")
-local naughty = require("naughty")
+naughty = require("naughty")
 local menubar = require("menubar")
 local vicious = require("vicious")     
+--}}}
 
 -- {{{ Error handling
--- Check if awesome encountered an error during startup and fell back to
--- another config (This code will only ever execute for the fallback config)
 if awesome.startup_errors then
     naughty.notify({ preset = naughty.config.presets.critical,
                      title = "Oops, there were errors during startup!",
@@ -33,10 +33,12 @@ do
 end
 -- }}}
 
--- {{{ Variable definitions
-dir = "/home/w4rlock/.config/awesome" --DIR DE LA CONF DE AWESOME
+-- {{{ USER PREFERENCES ENVIRONMENT
+dir = os.getenv("HOME").."/.config/awesome" --DIR DE LA CONF DE AWESOME
 beautiful.init(dir.."/themes/default/theme.lua")
 
+naughty.config.defaults.fg = color.CYAN
+naughty.config.defaults.border_color = '#006666'
 
 env = {
      interface  = "eth1",
@@ -68,9 +70,9 @@ local keyboard_action = {
                mute = "amixer set 'Master' toggle",
                next = "mpc next",
                prev = "mpc prev",
-               play = "mpc toggle"
-             --stop = "mpc stop"
-             --Mail = env.terminal .. " -e mutt"
+               play = "mpc toggle",
+               stop = "mpc stop",
+               Mail = env.terminal .. " -e mutt"
              --Mail = env.browser .. " http://www.gmail.com"
                  }
 
@@ -103,12 +105,38 @@ if beautiful.wallpaper then
 end
 -- }}}
 
- -- {{{ CONFIGS POR TAG -----------------------------------------------
+-- {{{ AUTORUN APPS INIT
+
+function run_once(prg, args)
+  if not prg then
+    do return nil end
+  end
+  if not args then
+    args=""
+  end
+  awful.util.spawn_with_shell('pgrep -f -u $USER -x ' .. prg .. ' || (' .. prg .. ' ' .. args ..')')
+end
+
+
+autorun = false
+autorunApps = { "cairo-dock" }
+
+if autorun then
+    for app = 1, #autorunApps do
+          run_once(autorunApps[app])
+    end
+end
+
+
+
+--}}}
+
+-- {{{ CONFIGS POR TAG -----------------------------------------------
 index = 1
-labels = { "1:sys", "2:term", "3:vim", "4:dev", "5:hack" }
+labels = { "1:sys", "2:term", "3:vim", "4:dev", "5:hack","6:www","7:im"}
 workspace = {}
 for d = 1, #labels do -- VISIBILIDAD POR CADA TAG
-    workspace[d] = { witop = true, wibottom = false }
+    workspace[d] = { witop = true, wibottom = true }
 end
 
 --}}}
@@ -116,7 +144,8 @@ end
 -- {{{ TAGS ----------------------------------------------------------
 tags = {}
 for s = 1, screen.count() do
-    tags[s] = awful.tag(labels,s, layouts[2])
+    --tags[s] = awful.tag(labels,s, layouts[2])
+    tags[s] = awful.tag(labels,s, layouts[9])
 end
 --}}}
 
@@ -345,10 +374,51 @@ end
 --}}}
 
 --{{{ CLOCK - DATE 
+
+require("calendar")     
 datewidget = wibox.widget.textbox()
-vicious.register(datewidget, vicious.widgets.date, setColor("%d/%m/%y %X ","YELLOW"), 2)
+--vicious.register(datewidget, vicious.widgets.date, setColor("%X ","YELLOW"), 2)
+vicious.register(datewidget, vicious.widgets.date, setColor("%X ","YELLOW"), 2)
 --http://www.lua.org/pil/22.1.html
+
+datewidget:connect_signal("mouse::enter", function() show_calendar(7) end)
+datewidget:connect_signal("mouse::leave", remove_calendar)
+ 
+--datewidget:buttons(awful.util.table.join(
+   --awful.button({ }, 1, function() add_calendar(-1) end),
+   --awful.button({ }, 3, function() add_calendar(1) end)
+--))
 --}}}
+
+-- {{{ PLAY SOUND BACKGROUND
+function play_sound(path)
+     awful.util.spawn_with_shell("mplayer -quiet " .. path .. " > /dev/null 2>&1")
+end
+-- }}}
+
+--{{{ NOTIFY BATTERY NOTEBOOK 
+function battery_low()
+     naughty_error("Danger battery low")
+     play_sound(dir.."/sounds/battery_low.mp3")
+end
+--}}}
+
+--{{{ BATTERY NOTEBOOK 
+
+batwidget = wibox.widget.textbox()
+--vicious.register(batwidget, vicious.widgets.bat, setColor("BAT: ")..setColor("$1$2% $3","DARKCYAN"), 61, "BAT0")
+vicious.register(batwidget, vicious.widgets.bat, 
+function (widget, args)
+     if (args[1] == '-' and args[2] == 20 or args[2] == 15) then
+          battery_low()
+     end
+     return setColor('BAT: ')..setColor(args[1]..args[2]..' '..args[3],"DARKCYAN")
+end
+, 61, "BAT0")
+
+--}}}
+
+
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -428,7 +498,8 @@ for s = 1, screen.count() do
 
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
-    if s == 1 then right_layout:add(wibox.widget.systray()) end
+    right_layout:add(batwidget)
+    right_layout:add(spacer)
     right_layout:add(tempwidget)
     right_layout:add(spacer)
     right_layout:add(mem)
@@ -436,6 +507,7 @@ for s = 1, screen.count() do
     right_layout:add(mpdwidget)
     right_layout:add(spacer)
     right_layout:add(datewidget)
+    if s == 1 then right_layout:add(wibox.widget.systray()) end
     right_layout:add(mylayoutbox[s])
 
     -- Now bring it all together (with the tasklist in the middle)
@@ -467,20 +539,12 @@ globalkeys = awful.util.table.join(
     awful.key({}, "XF86AudioRaiseVolume",
       function() --++++++++++++++++++++++++++++++++++++++++++++++++ PCM UP
         awful.util.spawn_with_shell(keyboard_action.raisevol)
-        getVolumenLevel()
-      end),
-    awful.key({ modkey }, "XF86AudioRaiseVolume", 
-      function() --++++++++++++++++++++++++++++++++++++++++++++++++ MASTER UP
         awful.util.spawn_with_shell(keyboard_action.raisevolMaster)
         getVolumenLevel()
       end),
     awful.key({}, "XF86AudioLowerVolume",
       function() --++++++++++++++++++++++++++++++++++++++++++++++++ PCM DOWN
         awful.util.spawn_with_shell(keyboard_action.lowervol) 
-        getVolumenLevel()
-      end),
-    awful.key({ modkey }, "XF86AudioLowerVolume",
-      function() --++++++++++++++++++++++++++++++++++++++++++++++++ MASTER DOWN
         awful.util.spawn_with_shell(keyboard_action.lowervolMaster)
         getVolumenLevel()
       end),
@@ -734,6 +798,14 @@ awful.rules.rules = {
                      focus = awful.client.focus.filter,
                      keys = clientkeys,
                      buttons = clientbuttons } },
+    { rule = { class = "Cairo-dock" },
+      properties = { floating = true, 
+                     border_width = 0
+                   }},
+    { rule = { class = "wbar" },
+      properties = { floating = true, 
+                     border_width = 0
+                   }},
     { rule = { class = "MPlayer" },
       properties = { floating = true } },
     { rule = { class = "pinentry" },
@@ -808,9 +880,21 @@ client.connect_signal("manage", function (c, startup)
     end
 end)
 
-client.connect_signal("focus", function(c) c.border_color = beautiful.border_focus end)
-client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_normal end)
+client.connect_signal("focus", 
+    function(c) 
+      c.border_color = beautiful.border_focus 
+      c.opacity = 0.2
+    end)
+client.connect_signal("unfocus", 
+    function(c) 
+      c.border_color = beautiful.border_normal 
+      c.opacity = 0.3
+    end)
 
-awful.util.spawn_with_shell("sleep 2 && xsetroot -cursor_name left_ptr")
---awful.util.spawn_with_shell("sleep 2 && xrandr --output HDMI1 --primary --mode 1920x1080")
+--awful.util.spawn_with_shell("sleep 2 && xsetroot -cursor_name left_ptr")
+--wibox_hide()
+awful.util.spawn_with_shell("sleep 2 && xrandr --output HDMI1 --primary --mode 1920x1080")
+awful.util.spawn_with_shell("sleep 2 && cairo-dock")
 -- }}}
+
+-- vim: foldmethod=marker:filetype=lua:expandtab:shiftwidth=5:tabstop=5:softtabstop=5:textwidth=80
