@@ -7,11 +7,14 @@ color = {
            BLACK = '#000000',
         DARKCYAN = '#04B4AE',
         DARKBLUE = '#000099',
+           GREYW = '#DDDDFF',
             GREY = '#222222',
           YELLOW = '#FFFF00',
              RED = '#FF0000',
+         DARKRED = '#8A0808',
          MAGENTA = '#FA58F4',
             GREY = '#585858',
+           DGREY = '#0F0E0E',
           ORANGE = '#FF6600',
          BORANGE = '#FF3100',
              SKY = '#3399FF',
@@ -29,14 +32,15 @@ function setColor(txt, clr)
 end
 --}}}
 
+themes_dir  = os.getenv("HOME") .. "/.config/awesome/themes/default"
 theme = {}
          --theme.font = "sans 8"
            theme.font = "Terminus 8"
       theme.bg_normal = "#000000cc" --TRANSPARENCY
-       theme.bg_focus = color.CYAN
+       theme.bg_focus = color.DARKCYAN
       theme.bg_urgent = "#FF0080"
     theme.bg_minimize = "#010101"     --GRIS
-         theme.fg_top = "#FA58F4"
+         theme.fg_top = color.DGREY
     --theme.fg_normal = "#FFFF00"     --AMARILLO
       theme.fg_normal = color.GREY
      --theme.fg_focus = "#F8F8FF"
@@ -46,8 +50,8 @@ theme = {}
     theme.fg_minimize = "#222222"
    theme.border_width = "1"
   theme.border_normal = color.BLACK
-   theme.border_focus = color.BLACK
-  theme.border_marked = "#91231c"
+   theme.border_focus = color.DGREY
+  theme.border_marked = color.GREYW
 -- There are other variable sets
 -- overriding the default one when
 -- defined, the sets are:
@@ -73,7 +77,7 @@ theme.menu_border_color = "#111000"
    theme.menu_bg_normal = color.BLACK
    theme.menu_fg_normal = color.GREY
     theme.menu_fg_focus = color.BLACK
-    theme.menu_bg_focus = color.CYAN
+    theme.menu_bg_focus = color.DARKRED
 theme.menu_submenu_icon = "/usr/share/awesome/themes/default/submenu.png"
 --theme.menu_submenu_icon = home .. "/.config/awesome/images/flecha-sig.png"
       theme.menu_height = "21"
@@ -128,6 +132,16 @@ theme.layout_tilebottom = home .. "/.config/awesome/images/layouts/tilebottom.pn
 --theme.wallpaper_cmd = { "awsetbg /home/w4rlock/myPictures/archLinuxWallpaper/Zangetsu_loves_Archie_by_paul_sebastian.png" }
         theme.wallpaper = home .."/.config/awesome/images/wallpaper.png"
     theme.wallpaper_cmd = { wallpaper}
+
+theme.widget_music                  = themes_dir .. "/icons/mpd2.png"
+theme.widget_mem                    = themes_dir .. "/icons/mem.png"
+theme.widget_temp                   = themes_dir .. "/icons/temp.png"
+theme.widget_battery                = themes_dir .. "/icons/battery.png"
+theme.widget_battery_low            = themes_dir .. "/icons/battery_low.png"
+theme.widget_battery_empty          = themes_dir .. "/icons/battery_empty.png"
+theme.arrl                          = themes_dir .. "/icons/arrl.png"
+theme.arrl_dl                       = themes_dir .. "/icons/arrl_dl.png"
+theme.arrl_ld                       = themes_dir .. "/icons/arrl_ld.png"
 
 return theme
 --vim: filetype=lua:expandtab:shiftwidth=4:tabstop=8:softtabstop=4:encoding=utf-8:textwidth=80
